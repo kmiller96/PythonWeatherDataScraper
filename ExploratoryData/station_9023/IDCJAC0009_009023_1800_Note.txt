@@ -2,7 +2,7 @@ Australian Government
 Bureau of Meteorology
 
 Notes for Daily Rainfall Climate Data
-Product code: IDCJAC0009 reference: 33884547
+Product code: IDCJAC0009 reference: 33885363
 ____________________________________________________________________
 
 ** Station Details **
@@ -98,7 +98,7 @@ http://www.bom.gov.au/climate/how/contacts.shtml
 
 _________________________________________
 
-Created on Fri 15 Dec 2017 05:49:55 AM GMT-00:00 from Climate Data Online, Bureau of Meteorology.
+Created on Fri 15 Dec 2017 06:58:13 AM GMT-00:00 from Climate Data Online, Bureau of Meteorology.
 http://www.bom.gov.au/climate/data
 
 Further information on this product: http://www.bom.gov.au/climate/cdo/about/about-rain-data.shtml
