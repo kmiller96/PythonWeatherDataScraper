@@ -12,8 +12,13 @@ def fetchStationList(station_csv_name):
     return station_df['Site']
 
 
-def downloadDataForStation(n, datadir='./', verbose=False):
+def downloadDataForStation(n, datadir='./', verbose=False, skipexistingdata=False):
     """Fetches the raw zipped file from BOM to process."""
+
+    # If the data already exists, possibly skip over it.
+    if ('station_%s.zip' % n in os.listdir(datadir)) and skipexistingdata:
+        if verbose: print "Skipped station %s" % n
+        return None
 
     # First access the weather station's data page.
     page = urllib2.urlopen(
@@ -106,7 +111,7 @@ def main():
     dataframes = dict(); total_rows = len(station_list)
     for ii, n in station_list.iteritems():
         print "Station %s/%s" % (ii+1, total_rows)
-        downloadDataForStation(n, datadir=DATA_DIRECTORY)
+        downloadDataForStation(n, datadir=DATA_DIRECTORY, skipexistingdata=True)
         unzip(DATA_DIRECTORY+'station_%s.zip' % n)
         dataframes[n] = importRainfallData(glob.glob(DATA_DIRECTORY+'station_%s/*.csv' % n)[0])
     export_df = formatMultiIndexDataframe(dataframes)
