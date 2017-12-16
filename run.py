@@ -9,7 +9,7 @@ import urllib2, os, zipfile, glob
 def fetchStationList(station_csv_name):
     """Extracts the station list from the csv file."""
     station_df = pd.read_csv(station_csv_name)
-    return station_numbers = station_df['Site']
+    return station_df['Site']
 
 
 def downloadDataForStation(n, datadir='./', verbose=False):
@@ -84,7 +84,8 @@ def importRainfallData(csv_file):
 
 def formatMultiIndexDataframe(dataframes_dict):
     """By passing in the dictionary, a multi-indexed dataframe will be created."""
-    return None
+    stations, dfs = zip(*dataframes_dict.items())
+    return pd.concat(dfs, keys=stations, names=['Station Number', 'Date'])
 
 
 def main():
