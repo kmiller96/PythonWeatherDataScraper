@@ -12,8 +12,28 @@ def fetchStationList(station_csv_name):
     return station_numbers = station_df['Site']
 
 
-def downloadDataForStation(n):
+def downloadDataForStation(n, datadir='./', verbose=False):
     """Fetches the raw zipped file from BOM to process."""
+
+    # First access the weather station's data page.
+    page = urllib2.urlopen(
+        r'http://www.bom.gov.au/jsp/ncc/cdio/weatherData/av?p_nccObsCode=136&p_display_type=dailyDataFile&p_startYear=&p_c=&p_stn_num='
+        + str(n).zfill(6)
+    )
+    soup = BeautifulSoup(page, 'html.parser')
+
+    # Then find the download link for that page.
+    download_link_extension = soup.find('a',
+        {'title': "Data file for daily rainfall data for all years"}
+    )['href']
+
+    # Open the download link (which is read as binary) and save it in the correct format (zip file).
+    data = urllib2.urlopen(str(r'http://www.bom.gov.au' + download_link_extension))
+    with open(datadir+'station_%s.zip' % n, 'wb') as zipper:
+        zipper.write(data.read())
+
+    # Finally, print a success message if verbose and return
+    if verbose: print "Download for station %s was successful!" % n
     return None
 
 
