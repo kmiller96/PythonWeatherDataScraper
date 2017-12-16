@@ -44,9 +44,42 @@ def unzip(zip_ref):
         z.extractall(basename)
     return None
 
-def importStationData(csv_file):
-    "Given the csv file, it will import and clean the raw data."
-    return None
+
+def importRainfallData(csv_file):
+    "Given the rainfall csv file, it will import and clean the raw data."
+    df = pandas.read_csv(stationcsv)
+
+    # Rename the columns
+    df.rename(columns={
+        'Bureau of Meteorology station number': "Station Number",
+        'Rainfall amount (millimetres)': 'Rainfall',
+    }, inplace=True)
+
+    # Combine date into a single column.
+    df['Year'] = df['Year'].map(str)
+    df['Month'] = df['Month'].map(lambda x: str(x).zfill(2))
+    df['Day'] = df['Day'].map(lambda x: str(x).zfill(2))
+    df.insert(
+        2, 'Date',
+        df['Year'] + '-' +
+        df['Month'] + '-' +
+        df['Day']
+    )
+    df.drop(['Year', 'Month', 'Day'], axis=1, inplace=True)
+
+    # Next, drop the first and second columns.
+    df.drop(["Product code", "Station Number"], axis=1, inplace=True)
+
+    # Drop any rows that are before the start of data collection (i.e. drop Jan if started in Feb).
+    data_start = df['Rainfall'].first_valid_index()
+    data_finish = df['Rainfall'].last_valid_index()
+    df = df[data_start:data_finish]
+
+    # Set the date as the index column.
+    df.set_index('Date', inplace=True)
+
+    # Finally return the result.
+    return df
 
 
 def formatMultiIndexDataframe(dataframes_dict):
@@ -64,7 +97,7 @@ def main():
     for _, n in station_list.iteritems():
         downloadDataForStation(n)
         unzip('station_%s.zip' % n)
-        dataframes[n] = importStationData(glob.glob('station_%s/*.csv' % n)[0])
+        dataframes[n] = importRainfallData(glob.glob('station_%s/*.csv' % n)[0])
     export_df = formatMultiIndexDataframe(dataframes)
     export_df.to_csv('weatherstations_WA.csv')
     print "Executed successfully."
