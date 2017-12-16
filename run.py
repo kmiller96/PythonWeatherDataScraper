@@ -39,6 +39,9 @@ def downloadDataForStation(n, datadir='./', verbose=False):
 
 def unzip(zip_ref):
     """Unzippes the reference specified into a new directory."""
+    basename = os.path.splitext(zip_ref)[0]
+    with zipfile.ZipFile(zip_ref, "r") as z:
+        z.extractall(basename)
     return None
 
 def importStationData(csv_file):
