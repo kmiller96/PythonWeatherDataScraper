@@ -2,12 +2,14 @@
 # DESCRIPTION: Collects the weather data in WA.
 
 from bs4 import BeautifulSoup
-import urllib2, os, zipfile, glob, pandas
+import pandas as pd
+import urllib2, os, zipfile, glob
 
 
-def fetchStationList():
+def fetchStationList(station_csv_name):
     """Extracts the station list from the csv file."""
-    return None
+    station_df = pd.read_csv(station_csv_name)
+    return station_numbers = station_df['Site']
 
 
 def downloadDataForStation(n):
@@ -32,10 +34,11 @@ def formatMultiIndexDataframe(dataframes_dict):
 def main():
     """Runs the main script."""
     BOM_HOME = r'http://www.bom.gov.au'
+    WEATHERSTATIONS_CSV = 'weather_stations.csv'
 
-    station_list = fetchStationList()
+    station_list = fetchStationList(WEATHERSTATIONS_CSV)
     dataframes = dict()
-    for n in station_list:
+    for _, n in station_list.iteritems():
         downloadDataForStation(n)
         unzip('station_%s.zip' % n)
         dataframes[n] = importStationData(glob.glob('station_%s/*.csv' % n)[0])
