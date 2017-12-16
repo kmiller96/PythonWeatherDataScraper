@@ -47,7 +47,7 @@ def unzip(zip_ref):
 
 def importRainfallData(csv_file):
     "Given the rainfall csv file, it will import and clean the raw data."
-    df = pandas.read_csv(stationcsv)
+    df = pd.read_csv(csv_file)
 
     # Rename the columns
     df.rename(columns={
@@ -88,19 +88,30 @@ def formatMultiIndexDataframe(dataframes_dict):
     return pd.concat(dfs, keys=stations, names=['Station Number', 'Date'])
 
 
+def tidyUp(datadir='./'):
+    """Goes through and cleans up after itself."""
+    for f in glob.glob(datadir+'*.zip'):
+        os.remove(f)
+    return
+
+
 def main():
     """Runs the main script."""
     BOM_HOME = r'http://www.bom.gov.au'
     WEATHERSTATIONS_CSV = 'weather_stations.csv'
+    DATA_DIRECTORY = 'Data/'
+    EXPORT_NAME = 'weatherstations_WA.csv'
 
     station_list = fetchStationList(WEATHERSTATIONS_CSV)
-    dataframes = dict()
-    for _, n in station_list.iteritems():
-        downloadDataForStation(n)
-        unzip('station_%s.zip' % n)
-        dataframes[n] = importRainfallData(glob.glob('station_%s/*.csv' % n)[0])
+    dataframes = dict(); total_rows = len(station_list)
+    for ii, n in station_list.iteritems():
+        print "Station %s/%s" % (ii+1, total_rows)
+        downloadDataForStation(n, datadir=DATA_DIRECTORY)
+        unzip(DATA_DIRECTORY+'station_%s.zip' % n)
+        dataframes[n] = importRainfallData(glob.glob(DATA_DIRECTORY+'station_%s/*.csv' % n)[0])
     export_df = formatMultiIndexDataframe(dataframes)
-    export_df.to_csv('weatherstations_WA.csv')
+    export_df.to_csv(EXPORT_NAME)
+    tidyUp(datadir=DATA_DIRECTORY)
     print "Executed successfully."
     return
 
