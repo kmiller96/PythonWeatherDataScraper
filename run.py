@@ -199,6 +199,31 @@ class MinTempWeatherStation(WeatherStation):
         return None
 
 
+class SolarExposureWeatherStation(WeatherStation):
+    """The class that handles fetching the data for the solar exposure."""
+
+    def __init__(self, n, autorun=True):
+        """Initialise the class."""
+        super(MinTempWeatherStation, self).__init__(n)
+        self._initaliseUniqueVariables(
+            pageCode=193,
+            downloadContainerTitle="Data file for daily solar exposure data for all years"
+        )
+        if autorun: self.autorun()
+        return None
+
+    def importIt(self):
+        """The importIt method for the temperature data."""
+        self._importIt(
+            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
+            renameDict={
+                'Bureau of Meteorology station number': "Station Number",
+                'Daily global solar exposure (MJ/m*m)': 'Solar Exposure',
+            }
+        )
+        return None
+
+
 def main():
     """Runs the main script."""
     WEATHERSTATIONS_CSV = 'ExploratoryData/weather_stations.csv'
