@@ -81,6 +81,37 @@ class WeatherStation(object):
             z.extractall(basename)
         return None
 
+    def _importIt(self, csv_name, renameDict):
+        """Imports (and tidies) in the rainfall data."""
+        self.df = pd.read_csv(glob.glob(self.datadir+self.saveformat+'/*.csv')[0])
+
+        # Rename the columns
+        self.df.rename(columns=renameDict, inplace=True)
+
+        # Combine date into a single column.
+        self.df['Year'] = self.df['Year'].map(str)
+        self.df['Month'] = self.df['Month'].map(lambda x: str(x).zfill(2))
+        self.df['Day'] = self.df['Day'].map(lambda x: str(x).zfill(2))
+        self.df.insert(
+            2, 'Date',
+            self.df['Year'] + '-' +
+            self.df['Month'] + '-' +
+            self.df['Day']
+        )
+        self.df.drop(['Year', 'Month', 'Day'], axis=1, inplace=True)
+
+        # Next, drop the first and second columns.
+        self.df.drop(self.df.columns[[0, 1]], axis=1, inplace=True)
+
+        # Drop any rows that are before the start of data collection (i.e. drop Jan if started in Feb).
+        data_start = self.df[self.df.columns[1]].first_valid_index()
+        data_finish = self.df[self.df.columns[1]].last_valid_index()
+        self.df = self.df[data_start:data_finish]
+
+        # Set the date as the index column.
+        self.df.set_index('Date', inplace=True)
+        return None
+
 
 class RainfallWeatherStation(WeatherStation):
     """The class that handles fetching the data for the rainfall."""
