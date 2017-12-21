@@ -45,6 +45,15 @@ class WeatherStation(object):
         self.saveformat = 'station_%s' % self.n
         return None
 
+    def _initaliseUniqueVariables(self, pageCode, downloadContainerTitle):
+        """Most of the process is identical: just set the vars that are unique."""
+        self.webpage = (
+            r'http://www.bom.gov.au/jsp/ncc/cdio/weatherData/av?p_nccObsCode=%s&p_display_type=dailyDataFile&p_startYear=&p_c=&p_stn_num=' % pageCode
+            + str(self.n).zfill(6)
+        )
+        self.HTML_download_attribute = {'title': downloadContainerTitle}
+        return None
+
     def downloadZippedData(self):
         """Downloads the zipped data for the given station."""
         # Check to see if the file is already downloaded.
@@ -79,11 +88,10 @@ class RainfallWeatherStation(WeatherStation):
     def __init__(self, n, autorun=True):
         """Initialise the class."""
         super(RainfallWeatherStation, self).__init__(n)
-        self.webpage = (
-            r'http://www.bom.gov.au/jsp/ncc/cdio/weatherData/av?p_nccObsCode=136&p_display_type=dailyDataFile&p_startYear=&p_c=&p_stn_num='
-            + str(self.n).zfill(6)
+        self._initaliseUniqueVariables(
+            pageCode=136,
+            downloadContainerTitle='Data file for daily rainfall data for all years'
         )
-        self.HTML_download_attribute = {'title': "Data file for daily rainfall data for all years"}
 
         # Then call the functions in order to initialise everything else.
         if autorun:
@@ -124,6 +132,25 @@ class RainfallWeatherStation(WeatherStation):
 
         # Set the date as the index column.
         self.df.set_index('Date', inplace=True)
+        return None
+
+
+class MaxTempWeatherStation(WeatherStation):
+    """The class that handles fetching the data for the maximum temperature."""
+
+    def __init__(self, n, autorun=True):
+        """Initialise the class."""
+        super(MaxTempWeatherStation, self).__init__(n)
+        self._initaliseUniqueVariables(
+            pageCode=122,
+            downloadContainerTitle="Data file for daily maximum temperature data for all years"
+        )
+
+        # Then call the functions in order to initialise everything else.
+        if autorun:
+            self.downloadZippedData()
+            self.unzipIt()
+            self.importIt()
         return None
 
 
