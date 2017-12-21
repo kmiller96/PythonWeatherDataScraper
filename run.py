@@ -82,8 +82,8 @@ class WeatherStation(object):
         return None
 
     def _importIt(self, csv_name, renameDict):
-        """Imports (and tidies) in the rainfall data."""
-        self.df = pd.read_csv(glob.glob(self.datadir+self.saveformat+'/*.csv')[0])
+        """Imports (and tidies) in the data."""
+        self.df = pd.read_csv(csv_name)
 
         # Rename the columns
         self.df.rename(columns=renameDict, inplace=True)
@@ -132,37 +132,14 @@ class RainfallWeatherStation(WeatherStation):
         return None
 
     def importIt(self):
-        """Imports (and tidies) in the rainfall data."""
-        self.df = pd.read_csv(glob.glob(self.datadir+self.saveformat+'/*.csv')[0])
-
-        # Rename the columns
-        self.df.rename(columns={
-            'Bureau of Meteorology station number': "Station Number",
-            'Rainfall amount (millimetres)': 'Rainfall',
-        }, inplace=True)
-
-        # Combine date into a single column.
-        self.df['Year'] = self.df['Year'].map(str)
-        self.df['Month'] = self.df['Month'].map(lambda x: str(x).zfill(2))
-        self.df['Day'] = self.df['Day'].map(lambda x: str(x).zfill(2))
-        self.df.insert(
-            2, 'Date',
-            self.df['Year'] + '-' +
-            self.df['Month'] + '-' +
-            self.df['Day']
+        """The importIt method for the rainfall data."""
+        self._importIt(
+            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
+            renameDict={
+                'Bureau of Meteorology station number': "Station Number",
+                'Rainfall amount (millimetres)': 'Rainfall',
+            }
         )
-        self.df.drop(['Year', 'Month', 'Day'], axis=1, inplace=True)
-
-        # Next, drop the first and second columns.
-        self.df.drop(["Product code", "Station Number"], axis=1, inplace=True)
-
-        # Drop any rows that are before the start of data collection (i.e. drop Jan if started in Feb).
-        data_start = self.df['Rainfall'].first_valid_index()
-        data_finish = self.df['Rainfall'].last_valid_index()
-        self.df = self.df[data_start:data_finish]
-
-        # Set the date as the index column.
-        self.df.set_index('Date', inplace=True)
         return None
 
 
@@ -182,6 +159,17 @@ class MaxTempWeatherStation(WeatherStation):
             self.downloadZippedData()
             self.unzipIt()
             self.importIt()
+        return None
+
+    def importIt(self):
+        """The importIt method for the rainfall data."""
+        self._importIt(
+            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
+            renameDict={
+                'Bureau of Meteorology station number': "Station Number",
+                'Maximum temperature (Degree C)': 'Temperature',
+            }
+        )
         return None
 
 
