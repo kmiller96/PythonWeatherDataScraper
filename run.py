@@ -45,13 +45,14 @@ class WeatherStation(object):
         self.saveformat = 'station_%s' % self.n
         return None
 
-    def _initaliseUniqueVariables(self, pageCode, downloadContainerTitle):
+    def _initaliseUniqueVariables(self, downloadFileName, pageCode, downloadContainerTitle):
         """Most of the process is identical: just set the vars that are unique."""
         self.webpage = (
             r'http://www.bom.gov.au/jsp/ncc/cdio/weatherData/av?p_nccObsCode=%s&p_display_type=dailyDataFile&p_startYear=&p_c=&p_stn_num=' % pageCode
             + str(self.n).zfill(6)
         )
         self.HTML_download_attribute = {'title': downloadContainerTitle}
+        self.fname = downloadFileName
         return None
 
     def downloadZippedData(self, skipexisting=True):
@@ -79,6 +80,14 @@ class WeatherStation(object):
         basename = os.path.splitext(zip_ref)[0]
         with zipfile.ZipFile(zip_ref, "r") as z:
             z.extractall(basename)
+        return None
+
+    def tidyStationDir(self):
+        """Renames the CSV and TXT file so it is easily identifiable."""
+        directory = self.datadir+self.saveformat
+        for f in os.listdir(directory):
+            fname, fext = os.path.splitext(f)
+            os.rename(f, self.fname+fext)
         return None
 
     def _importIt(self, csv_name, renameDict):
@@ -120,6 +129,7 @@ class WeatherStation(object):
         """Automatically run the entire data extraction process."""
         self.downloadZippedData()
         self.unzipIt()
+        self.tidyStationDir()
         self.importIt()
         return None
 
@@ -131,6 +141,7 @@ class RainfallWeatherStation(WeatherStation):
         """Initialise the class."""
         super(RainfallWeatherStation, self).__init__(n)
         self._initaliseUniqueVariables(
+            downloadFileName='rainfall',
             pageCode=136,
             downloadContainerTitle='Data file for daily rainfall data for all years'
         )
@@ -156,6 +167,7 @@ class MaxTempWeatherStation(WeatherStation):
         """Initialise the class."""
         super(MaxTempWeatherStation, self).__init__(n)
         self._initaliseUniqueVariables(
+            downloadFileName='max_temperature',
             pageCode=122,
             downloadContainerTitle="Data file for daily maximum temperature data for all years"
         )
@@ -181,6 +193,7 @@ class MinTempWeatherStation(WeatherStation):
         """Initialise the class."""
         super(MinTempWeatherStation, self).__init__(n)
         self._initaliseUniqueVariables(
+            downloadFileName='min_temperature',
             pageCode=123,
             downloadContainerTitle="Data file for daily minimum temperature data for all years"
         )
@@ -206,6 +219,7 @@ class SolarExposureWeatherStation(WeatherStation):
         """Initialise the class."""
         super(MinTempWeatherStation, self).__init__(n)
         self._initaliseUniqueVariables(
+            downloadFileName='solar_exposure',
             pageCode=193,
             downloadContainerTitle="Data file for daily solar exposure data for all years"
         )
@@ -224,24 +238,34 @@ class SolarExposureWeatherStation(WeatherStation):
         return None
 
 
-def main():
+def main(import_csv, data_dir, export_csv, debug=False):
     """Runs the main script."""
-    WEATHERSTATIONS_CSV = 'ExploratoryData/weather_stations.csv'
-    DATA_DIRECTORY = 'Data/'
-    EXPORT_NAME = 'weatherstations_export_WA.csv'
+    # Fetch station list.
+    station_list = fetchStationList(import_csv)
+    if debug: station_list = station_list[:10]
 
-    station_list = fetchStationList(WEATHERSTATIONS_CSV)
+    # Extract the data from that list.
     dataframes = dict(); total_rows = len(station_list)
     for ii, n in station_list.iteritems():
         print "Station %s/%s" % (ii+1, total_rows)
         station = RainfallWeatherStation(n)
         dataframes[n] = station.df
+
+    # Format export csv.
     export_df = formatMultiIndexDataframe(dataframes)
-    export_df.to_csv(EXPORT_NAME)
-    tidyUp(datadir=DATA_DIRECTORY)
+    if debug: export = 'debug.csv'
+    export_df.to_csv(export_csv)
+
+    # Tidy up and print.
+    if not debug: tidyUp(datadir=data_dir)
     print "Executed successfully."
     return
 
 
 if __name__ == '__main__':
-    main()
+    WEATHERSTATIONS_CSV = 'ExploratoryData/weather_stations.csv'
+    DATA_DIRECTORY = 'Data/'
+    EXPORT_NAME = 'weatherstations_export_WA.csv'
+    DEBUG = True
+
+    main(WEATHERSTATIONS_CSV, DATA_DIRECTORY, EXPORT_NAME, DEBUG)
