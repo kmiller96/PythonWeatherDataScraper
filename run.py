@@ -43,6 +43,7 @@ class WeatherStation(object):
         self.HTML_download_attribute = {}  # NOTE: This must be defined in the children classes.
         self.datadir = 'Data/'
         self.saveformat = 'station_%s' % self.n
+        self.directory = self.datadir+self.saveformat
         return None
 
     def _initaliseUniqueVariables(self, downloadFileName, pageCode, downloadContainerTitle):
@@ -58,7 +59,7 @@ class WeatherStation(object):
     def downloadZippedData(self, skipexisting=True):
         """Downloads the zipped data for the given station."""
         # Check to see if the file is already downloaded.
-        if glob.glob(self.datadir+self.saveformat+'*') and skipexisting:
+        if glob.glob(self.directory+'*') and skipexisting:
             return None
 
         # First get the download link.
@@ -70,13 +71,13 @@ class WeatherStation(object):
 
         # Then we can download it.
         data = urllib2.urlopen(str(self.HOME + download_link_extension))
-        with open(self.datadir+self.saveformat+'.zip', 'wb') as f:
+        with open(self.directory+'.zip', 'wb') as f:
             f.write(data.read())
         return None
 
     def unzipIt(self):
         """Unzips the zipped file."""
-        zip_ref = self.datadir+self.saveformat+'.zip'
+        zip_ref = self.directory+'.zip'
         basename = os.path.splitext(zip_ref)[0]
         with zipfile.ZipFile(zip_ref, "r") as z:
             z.extractall(basename)
@@ -84,15 +85,15 @@ class WeatherStation(object):
 
     def tidyStationDir(self):
         """Renames the CSV and TXT file so it is easily identifiable."""
-        directory = self.datadir+self.saveformat
-        for f in os.listdir(directory):
+        for f in os.listdir(self.directory):
             fname, fext = os.path.splitext(f)
-            os.rename(f, self.fname+fext)
+            old, new = self.directory+'/'+f, self.directory+'/'+self.fname+fext
+            os.rename(old, new)
         return None
 
-    def _importIt(self, csv_name, renameDict):
+    def _importIt(self, renameDict):
         """Imports (and tidies) in the data."""
-        self.df = pd.read_csv(csv_name)
+        self.df = pd.read_csv(self.directory+'/%s.csv'%self.fname)
 
         # Rename the columns
         self.df.rename(columns=renameDict, inplace=True)
@@ -151,7 +152,6 @@ class RainfallWeatherStation(WeatherStation):
     def importIt(self):
         """The importIt method for the rainfall data."""
         self._importIt(
-            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
             renameDict={
                 'Bureau of Meteorology station number': "Station Number",
                 'Rainfall amount (millimetres)': 'Rainfall',
@@ -177,7 +177,6 @@ class MaxTempWeatherStation(WeatherStation):
     def importIt(self):
         """The importIt method for the temperature data."""
         self._importIt(
-            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
             renameDict={
                 'Bureau of Meteorology station number': "Station Number",
                 'Maximum temperature (Degree C)': 'Maximum Temperature',
@@ -203,7 +202,6 @@ class MinTempWeatherStation(WeatherStation):
     def importIt(self):
         """The importIt method for the temperature data."""
         self._importIt(
-            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
             renameDict={
                 'Bureau of Meteorology station number': "Station Number",
                 'Minimum temperature (Degree C)': 'Minimum Temperature',
@@ -229,7 +227,6 @@ class SolarExposureWeatherStation(WeatherStation):
     def importIt(self):
         """The importIt method for the temperature data."""
         self._importIt(
-            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
             renameDict={
                 'Bureau of Meteorology station number': "Station Number",
                 'Daily global solar exposure (MJ/m*m)': 'Solar Exposure',
