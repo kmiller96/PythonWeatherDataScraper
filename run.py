@@ -112,6 +112,17 @@ class WeatherStation(object):
         self.df.set_index('Date', inplace=True)
         return None
 
+    def importIt(self):
+        """Public version of the _importIt method."""
+        return None  # Simply namespace placeholder for other methods.
+
+    def autorun(self):
+        """Automatically run the entire data extraction process."""
+        self.downloadZippedData()
+        self.unzipIt()
+        self.importIt()
+        return None
+
 
 class RainfallWeatherStation(WeatherStation):
     """The class that handles fetching the data for the rainfall."""
@@ -123,12 +134,7 @@ class RainfallWeatherStation(WeatherStation):
             pageCode=136,
             downloadContainerTitle='Data file for daily rainfall data for all years'
         )
-
-        # Then call the functions in order to initialise everything else.
-        if autorun:
-            self.downloadZippedData()
-            self.unzipIt()
-            self.importIt()
+        if autorun: self.autorun()
         return None
 
     def importIt(self):
@@ -153,12 +159,7 @@ class MaxTempWeatherStation(WeatherStation):
             pageCode=122,
             downloadContainerTitle="Data file for daily maximum temperature data for all years"
         )
-
-        # Then call the functions in order to initialise everything else.
-        if autorun:
-            self.downloadZippedData()
-            self.unzipIt()
-            self.importIt()
+        if autorun: self.autorun()
         return None
 
     def importIt(self):
