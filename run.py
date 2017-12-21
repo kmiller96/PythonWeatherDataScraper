@@ -47,6 +47,10 @@ class WeatherStation(object):
 
     def downloadZippedData(self):
         """Downloads the zipped data for the given station."""
+        # Check to see if the file is already downloaded.
+        if glob.glob(self.datadir+self.saveformat+'*'):  # Either dir or zip
+            return None
+
         # First get the download link.
         page = urllib2.urlopen(self.webpage)
         soup = BeautifulSoup(page, 'html.parser')
@@ -125,9 +129,9 @@ class RainfallWeatherStation(WeatherStation):
 
 def main():
     """Runs the main script."""
-    WEATHERSTATIONS_CSV = 'weather_stations.csv'
+    WEATHERSTATIONS_CSV = 'ExploratoryData/weather_stations.csv'
     DATA_DIRECTORY = 'Data/'
-    EXPORT_NAME = 'weatherstations_WA.csv'
+    EXPORT_NAME = 'weatherstations_export_WA.csv'
 
     station_list = fetchStationList(WEATHERSTATIONS_CSV)
     dataframes = dict(); total_rows = len(station_list)
