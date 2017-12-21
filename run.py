@@ -54,10 +54,10 @@ class WeatherStation(object):
         self.HTML_download_attribute = {'title': downloadContainerTitle}
         return None
 
-    def downloadZippedData(self):
+    def downloadZippedData(self, skipexisting=True):
         """Downloads the zipped data for the given station."""
         # Check to see if the file is already downloaded.
-        if glob.glob(self.datadir+self.saveformat+'*'):  # Either dir or zip
+        if glob.glob(self.datadir+self.saveformat+'*') and skipexisting:
             return None
 
         # First get the download link.
