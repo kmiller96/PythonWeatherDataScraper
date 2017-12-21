@@ -162,7 +162,7 @@ class MaxTempWeatherStation(WeatherStation):
         return None
 
     def importIt(self):
-        """The importIt method for the rainfall data."""
+        """The importIt method for the temperature data."""
         self._importIt(
             csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
             renameDict={
