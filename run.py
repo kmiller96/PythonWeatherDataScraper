@@ -168,7 +168,32 @@ class MaxTempWeatherStation(WeatherStation):
             csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
             renameDict={
                 'Bureau of Meteorology station number': "Station Number",
-                'Maximum temperature (Degree C)': 'Temperature',
+                'Maximum temperature (Degree C)': 'Maximum Temperature',
+            }
+        )
+        return None
+
+
+class MinTempWeatherStation(WeatherStation):
+    """The class that handles fetching the data for the minimum temperature."""
+
+    def __init__(self, n, autorun=True):
+        """Initialise the class."""
+        super(MinTempWeatherStation, self).__init__(n)
+        self._initaliseUniqueVariables(
+            pageCode=123,
+            downloadContainerTitle="Data file for daily minimum temperature data for all years"
+        )
+        if autorun: self.autorun()
+        return None
+
+    def importIt(self):
+        """The importIt method for the temperature data."""
+        self._importIt(
+            csv_name=glob.glob(self.datadir+self.saveformat+'/*.csv')[0],
+            renameDict={
+                'Bureau of Meteorology station number': "Station Number",
+                'Minimum temperature (Degree C)': 'Minimum Temperature',
             }
         )
         return None
