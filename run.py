@@ -59,7 +59,7 @@ class WeatherStation(object):
     def downloadZippedData(self, skipexisting=True):
         """Downloads the zipped data for the given station."""
         # Check to see if the file is already downloaded.
-        if glob.glob(self.directory+'*.zip') and skipexisting:
+        if glob.glob(self.directory+'.zip') and skipexisting:
             return None
 
         # First get the download link.
